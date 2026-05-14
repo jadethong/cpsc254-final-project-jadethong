@@ -1,0 +1,15 @@
+# Ignore the virtual environment
+venv/
+env/
+.venv/
+
+# Ignore secret keys
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore local database files created by ChromaDB
+db/
+chroma_db/
