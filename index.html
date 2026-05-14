@@ -3,467 +3,727 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Quiz Generator</title>
+  <title>StudyScribe</title>
   <style>
-    /* ── Reset & base ── */
+    /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Tokens ── */
+    :root {
+      --bg:        #0b1120;
+      --surface:   #141e33;
+      --surface2:  #1a2744;
+      --border:    #273559;
+      --accent:    #4f8ef7;
+      --accent2:   #7c5cf6;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --yellow:    #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --radius:    10px;
+    }
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    header .logo { font-size: 1.5rem; }
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Two-column layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 0;
+      height: 100%;
+    }
+
+    /* ── Left sidebar ── */
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
+      gap: 1.5rem;
+      overflow-y: auto;
     }
 
-    h1 {
-      font-size: 2rem;
+    /* ── Right main ── */
+    main {
+      padding: 1.75rem 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 0.7rem;
       font-weight: 700;
-      color: #7dd3fc;
-      margin-bottom: 0.25rem;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      margin-bottom: 2rem;
-      font-size: 0.95rem;
-    }
-
-    /* ── Card wrapper ── */
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.75rem;
-      width: 100%;
-      max-width: 680px;
-      margin-bottom: 1.5rem;
-    }
-
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 1rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
     }
 
-    /* ── File input area ── */
-    .upload-area {
-      border: 2px dashed #334155;
-      border-radius: 8px;
-      padding: 1.5rem;
+    /* ── Cards / panels ── */
+    .panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+    }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
       text-align: center;
       cursor: pointer;
-      transition: border-color 0.2s;
-      margin-bottom: 1rem;
+      transition: border-color 0.2s, background 0.2s;
     }
-
-    .upload-area:hover { border-color: #7dd3fc; }
-    .upload-area.dragover { border-color: #38bdf8; background: #0f2942; }
-
-    .upload-area input[type="file"] {
-      display: none;
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(79,142,247,0.06);
     }
+    .drop-zone input { display: none; }
+    .drop-zone label { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+    .drop-zone p { color: var(--muted); font-size: 0.78rem; margin-top: 0.35rem; }
 
-    .upload-area label {
-      cursor: pointer;
-      color: #7dd3fc;
-      font-weight: 500;
+    #file-list {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 1em;
     }
-
-    .upload-area p { color: #64748b; font-size: 0.85rem; margin-top: 0.4rem; }
-
-    #filename-display {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-bottom: 1rem;
-      min-height: 1.2em;
-    }
-
-    /* ── Controls row ── */
-    .controls {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .controls label { color: #94a3b8; font-size: 0.9rem; }
-
-    select {
-      background: #0f172a;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 0.4rem 0.6rem;
-      font-size: 0.9rem;
+    #file-list span {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      margin: 0.15rem 0.15rem 0 0;
+      color: var(--text);
     }
 
     /* ── Buttons ── */
-    button {
-      padding: 0.55rem 1.25rem;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
       border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
+      border-radius: 7px;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
+      transition: opacity 0.15s, transform 0.1s;
     }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary   { background: var(--accent);  color: #fff; }
+    .btn-secondary { background: var(--accent2); color: #fff; }
+    .btn-ghost     { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+    .btn-sm        { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
+    .btn-full      { width: 100%; }
 
-    button:active { transform: scale(0.97); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    #upload-btn {
-      background: #0ea5e9;
-      color: #fff;
-    }
-
-    #generate-btn {
-      background: #6366f1;
-      color: #fff;
-    }
-
-    /* ── Status / error banner ── */
-    #status {
+    /* ── Form controls ── */
+    input[type="text"], select {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
       font-size: 0.9rem;
-      min-height: 1.4em;
-      margin-top: 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
     }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); }
+    label.field-label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .field { margin-bottom: 0.75rem; }
 
-    .status-ok   { color: #4ade80; }
-    .status-err  { color: #f87171; }
-    .status-info { color: #7dd3fc; }
+    /* ── Status banner ── */
+    .status {
+      font-size: 0.85rem;
+      min-height: 1.2em;
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      display: none;
+    }
+    .status.visible { display: block; }
+    .status.ok   { background: rgba(34,197,94,0.12);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .status.err  { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+    .status.info { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
 
     /* ── Spinner ── */
-    .spinner {
+    .spin {
       display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid #334155;
-      border-top-color: #7dd3fc;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.65s linear infinite;
       vertical-align: middle;
-      margin-right: 6px;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Quiz cards ── */
-    #quiz-container { width: 100%; max-width: 680px; }
+    /* ── Progress panel ── */
+    .progress-bar-wrap {
+      background: var(--bg);
+      border-radius: 99px;
+      height: 7px;
+      overflow: hidden;
+      margin: 0.4rem 0 0.2rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.4s;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .stat-row strong { color: var(--text); }
 
-    #quiz-container h2 {
-      font-size: 1.1rem;
-      color: #cbd5e1;
+    /* ── Weak-concept chips ── */
+    .weak-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .weak-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .weak-chip:hover { border-color: var(--yellow); }
+    .weak-chip .concept-name { color: var(--text); }
+    .weak-chip .concept-acc  { color: var(--yellow); font-weight: 700; }
+    .weak-chip-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 2rem 1rem;
+    }
+    .empty-state .big { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    /* ── Quiz area ── */
+    #quiz-area h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
       margin-bottom: 1rem;
     }
 
     .question-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
       margin-bottom: 1rem;
+      transition: border-color 0.2s;
     }
+    .question-card.answered-correct { border-color: var(--green); }
+    .question-card.answered-wrong   { border-color: var(--red);   }
 
-    .question-card .q-number {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #6366f1;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.4rem;
-    }
-
-    .question-card .q-text {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 0.85rem;
-      line-height: 1.5;
-    }
-
-    .choices {
-      list-style: none;
+    .q-meta {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 0.5rem;
-      margin-bottom: 0.85rem;
-    }
-
-    .choices li {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.92rem;
-      color: #cbd5e1;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    .choices li:hover { background: #1e3a5f; border-color: #7dd3fc; }
-
-    .choices li.correct {
-      background: #14532d;
-      border-color: #4ade80;
-      color: #bbf7d0;
-    }
-
-    .choices li.incorrect {
-      background: #450a0a;
-      border-color: #f87171;
-      color: #fecaca;
-    }
-
-    .choices li.revealed {
-      cursor: default;
-      pointer-events: none;
-    }
-
-    .answer-badge {
-      display: inline-block;
-      background: #14532d;
-      color: #4ade80;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
       margin-bottom: 0.5rem;
     }
-
-    .explanation {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      line-height: 1.5;
-      border-left: 3px solid #334155;
-      padding-left: 0.75rem;
-      display: none;
+    .q-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    .q-concept {
+      font-size: 0.7rem;
+      background: rgba(79,142,247,0.15);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 0.1rem 0.5rem;
+    }
+    .q-text {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.55;
+      margin-bottom: 0.85rem;
     }
 
+    /* ── Choices ── */
+    .choices { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+    .choices li {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .choices li:hover:not(.revealed) { background: var(--surface2); border-color: var(--accent); }
+    .choices li.correct  { background: rgba(34,197,94,0.12);  border-color: var(--green); color: #86efac; }
+    .choices li.incorrect{ background: rgba(239,68,68,0.12);  border-color: var(--red);   color: #fca5a5; }
+    .choices li.revealed { cursor: default; pointer-events: none; }
+    .choice-icon { font-size: 0.8rem; min-width: 1rem; }
+
+    /* ── Explanation ── */
+    .explanation {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.55;
+      border-left: 3px solid var(--border);
+      padding-left: 0.75rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
     .explanation.visible { display: block; }
+
+    /* ── Refusal card ── */
+    .refusal-card {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      color: var(--yellow);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .refusal-card .refusal-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { border-right: none; border-bottom: 1px solid var(--border); }
+    }
   </style>
 </head>
 <body>
 
-  <h1>🎓 AI Quiz Generator</h1>
-  <p class="subtitle">Upload a lecture PDF and let AI build a quiz for you.</p>
+<!-- ── Header ── -->
+<header>
+  <span class="logo">📖</span>
+  <h1>StudyScribe</h1>
+  <p>Feed it your lecture PDFs. It becomes your personal tutor.</p>
+</header>
 
-  <!-- ── Upload card ── -->
-  <div class="card">
-    <h2>Step 1 — Upload PDF</h2>
+<div class="layout">
 
-    <div class="upload-area" id="drop-zone">
-      <input type="file" id="file-input" accept=".pdf" />
-      <label for="file-input">📄 Click to choose a PDF</label>
-      <p>or drag and drop here</p>
+  <!-- ══════════════════ LEFT SIDEBAR ══════════════════ -->
+  <aside>
+
+    <!-- Step 1: Upload -->
+    <div>
+      <div class="section-title">Step 1 — Upload PDFs</div>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".pdf" multiple />
+        <label for="file-input">📄 Click to choose PDFs</label>
+        <p>or drag &amp; drop — multiple files supported</p>
+      </div>
+      <div id="file-list"></div>
+      <button class="btn btn-primary btn-full" id="upload-btn" style="margin-top:0.75rem" disabled>
+        Upload &amp; Index
+      </button>
+      <div class="status" id="upload-status"></div>
     </div>
 
-    <div id="filename-display">No file selected.</div>
-
-    <div class="controls">
-      <button id="upload-btn" disabled>Upload</button>
-
-      <label for="num-q">Questions:</label>
-      <select id="num-q">
-        <option value="3">3</option>
-        <option value="5" selected>5</option>
-        <option value="7">7</option>
-        <option value="10">10</option>
-      </select>
-
-      <button id="generate-btn" disabled>✨ Generate Quiz</button>
+    <!-- Step 2: Generate quiz -->
+    <div>
+      <div class="section-title">Step 2 — Generate Quiz</div>
+      <div class="field">
+        <label class="field-label" for="topic-input">Topic (from your notes)</label>
+        <input type="text" id="topic-input" placeholder="e.g. TCP vs UDP, RSA encryption…" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="num-q">Number of questions</label>
+        <select id="num-q">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="7">7</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary btn-full" id="generate-btn" disabled>
+        ✨ Generate Quiz
+      </button>
+      <div class="status" id="generate-status"></div>
     </div>
 
-    <div id="status"></div>
-  </div>
+    <!-- Progress panel -->
+    <div>
+      <div class="section-title">Session Progress</div>
+      <div class="panel" id="progress-panel">
+        <div class="stat-row">
+          <span>Accuracy</span>
+          <strong id="acc-label">—</strong>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="acc-bar" style="width:0%"></div>
+        </div>
+        <div class="stat-row" style="margin-top:0.6rem">
+          <span>Answered</span><strong id="answered-label">0</strong>
+        </div>
+        <div class="stat-row">
+          <span>Correct</span><strong id="correct-label">0</strong>
+        </div>
+      </div>
+    </div>
 
-  <!-- ── Quiz output ── -->
-  <div id="quiz-container"></div>
+    <!-- Weak concepts -->
+    <div>
+      <div class="section-title">⚠️ Review These Concepts</div>
+      <div id="weak-panel">
+        <div class="empty-state" style="padding:0.75rem 0">
+          <p>Answer some questions to see suggestions.</p>
+        </div>
+      </div>
+    </div>
 
-  <script>
-    // ── DOM refs ──────────────────────────────────────────────────────────
-    const fileInput     = document.getElementById('file-input');
-    const dropZone      = document.getElementById('drop-zone');
-    const filenameDisplay = document.getElementById('filename-display');
-    const uploadBtn     = document.getElementById('upload-btn');
-    const generateBtn   = document.getElementById('generate-btn');
-    const numQSelect    = document.getElementById('num-q');
-    const statusEl      = document.getElementById('status');
-    const quizContainer = document.getElementById('quiz-container');
+    <!-- Reset -->
+    <div style="margin-top:auto">
+      <button class="btn btn-ghost btn-full btn-sm" id="reset-btn">🗑 Clear &amp; Start Over</button>
+    </div>
 
-    let selectedFile = null;
-    let uploadDone   = false;
+  </aside>
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-    function setStatus(msg, type = 'info') {
-      statusEl.innerHTML = msg;
-      statusEl.className = `status-${type}`;
+  <!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+  <main>
+    <div id="quiz-area">
+      <div class="empty-state">
+        <div class="big">🎓</div>
+        <p>Upload your lecture PDFs on the left,<br>choose a topic, and hit <strong>Generate Quiz</strong>.</p>
+      </div>
+    </div>
+  </main>
+
+</div><!-- /.layout -->
+
+<script>
+// ── DOM refs ──────────────────────────────────────────────────────────────
+const dropZone      = document.getElementById('drop-zone');
+const fileInput     = document.getElementById('file-input');
+const fileList      = document.getElementById('file-list');
+const uploadBtn     = document.getElementById('upload-btn');
+const uploadStatus  = document.getElementById('upload-status');
+
+const topicInput    = document.getElementById('topic-input');
+const numQSelect    = document.getElementById('num-q');
+const generateBtn   = document.getElementById('generate-btn');
+const generateStatus= document.getElementById('generate-status');
+
+const quizArea      = document.getElementById('quiz-area');
+const accLabel      = document.getElementById('acc-label');
+const accBar        = document.getElementById('acc-bar');
+const answeredLabel = document.getElementById('answered-label');
+const correctLabel  = document.getElementById('correct-label');
+const weakPanel     = document.getElementById('weak-panel');
+const resetBtn      = document.getElementById('reset-btn');
+
+let selectedFiles = [];
+let indexDone     = false;
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function setStatus(el, msg, type) {
+  el.innerHTML = msg;
+  el.className = `status visible ${type}`;
+}
+function clearStatus(el) {
+  el.className = 'status';
+  el.innerHTML = '';
+}
+function spinner() {
+  return '<span class="spin"></span> ';
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => handleFiles([...fileInput.files]));
+
+function handleFiles(files) {
+  const pdfs = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (!pdfs.length) { setStatus(uploadStatus, 'Only PDF files are supported.', 'err'); return; }
+  selectedFiles = pdfs;
+  fileList.innerHTML = pdfs.map(f =>
+    `<span>📄 ${f.name} <small style="color:var(--muted)">(${(f.size/1024).toFixed(0)} KB)</small></span>`
+  ).join('');
+  uploadBtn.disabled = false;
+  generateBtn.disabled = true;
+  indexDone = false;
+  clearStatus(uploadStatus);
+}
+
+// ── Upload & index ────────────────────────────────────────────────────────
+uploadBtn.addEventListener('click', async () => {
+  if (!selectedFiles.length) return;
+  uploadBtn.disabled = true;
+  generateBtn.disabled = true;
+  setStatus(uploadStatus, spinner() + 'Uploading and indexing…', 'info');
+
+  const form = new FormData();
+  selectedFiles.forEach(f => form.append('files', f));
+
+  try {
+    const res  = await fetch('/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) { setStatus(uploadStatus, '❌ ' + data.error, 'err'); uploadBtn.disabled = false; return; }
+    indexDone = true;
+    generateBtn.disabled = false;
+    setStatus(uploadStatus,
+      `✅ ${data.files.length} file(s) indexed — ${data.chunks} chunks ready.`, 'ok');
+  } catch (e) {
+    setStatus(uploadStatus, '❌ Network error: ' + e.message, 'err');
+    uploadBtn.disabled = false;
+  }
+});
+
+// ── Generate quiz ─────────────────────────────────────────────────────────
+generateBtn.addEventListener('click', async () => {
+  const topic = topicInput.value.trim();
+  if (!topic) { setStatus(generateStatus, 'Please enter a topic first.', 'err'); return; }
+
+  generateBtn.disabled = true;
+  quizArea.innerHTML = '';
+  setStatus(generateStatus, spinner() + 'Retrieving context and generating quiz…', 'info');
+
+  try {
+    const res  = await fetch('/generate-quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, num_questions: parseInt(numQSelect.value) }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) { setStatus(generateStatus, '❌ ' + data.error, 'err'); generateBtn.disabled = false; return; }
+
+    if (data.out_of_scope) {
+      renderRefusal(data.refusal_message || 'Topic not found in your uploaded materials.');
+      setStatus(generateStatus, '⚠️ Topic is outside your uploaded documents.', 'err');
+    } else {
+      clearStatus(generateStatus);
+      renderQuiz(data.questions, data.topic);
     }
+  } catch (e) {
+    setStatus(generateStatus, '❌ Network error: ' + e.message, 'err');
+  }
+  generateBtn.disabled = false;
+});
 
-    function spinner(msg) {
-      return `<span class="spinner"></span>${msg}`;
-    }
+// ── Render: out-of-scope refusal ──────────────────────────────────────────
+function renderRefusal(message) {
+  quizArea.innerHTML = `
+    <div class="refusal-card">
+      <div class="refusal-icon">🚫</div>
+      <strong>Out of scope</strong><br>${message}
+    </div>`;
+}
 
-    // ── File selection ────────────────────────────────────────────────────
-    fileInput.addEventListener('change', () => {
-      handleFileSelect(fileInput.files[0]);
-    });
+// ── Render: quiz cards ────────────────────────────────────────────────────
+function renderQuiz(questions, topic) {
+  quizArea.innerHTML = `<h2>📝 ${topic || 'Quiz'} <small style="color:var(--muted);font-weight:400">(${questions.length} questions)</small></h2>`;
 
-    dropZone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
+  questions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
 
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    card.innerHTML = `
+      <div class="q-meta">
+        <span class="q-num">Q${idx + 1}</span>
+        <span class="q-concept">${q.concept || ''}</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <ul class="choices"></ul>
+      <div class="explanation">${q.explanation}</div>`;
 
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      handleFileSelect(e.dataTransfer.files[0]);
-    });
+    const ul = card.querySelector('.choices');
 
-    function handleFileSelect(file) {
-      if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.pdf')) {
-        setStatus('Only PDF files are supported.', 'err');
-        return;
-      }
-      selectedFile = file;
-      filenameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-      uploadBtn.disabled = false;
-      generateBtn.disabled = true;
-      uploadDone = false;
-      setStatus('');
-    }
+    q.choices.forEach(choice => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="choice-icon">○</span> ${choice}`;
 
-    // ── Upload ────────────────────────────────────────────────────────────
-    uploadBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
+      li.addEventListener('click', async () => {
+        if (li.classList.contains('revealed')) return;
 
-      uploadBtn.disabled = true;
-      generateBtn.disabled = true;
-      setStatus(spinner('Uploading and extracting text…'));
+        const isCorrect = choice === q.answer;
 
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      try {
-        const res = await fetch('/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-
-        if (!res.ok) {
-          setStatus(`Error: ${data.error}`, 'err');
-          uploadBtn.disabled = false;
-          return;
-        }
-
-        uploadDone = true;
-        generateBtn.disabled = false;
-        setStatus(
-          `✅ Uploaded <strong>${data.filename}</strong> — ${data.char_count.toLocaleString()} characters extracted.`,
-          'ok'
-        );
-      } catch (err) {
-        setStatus(`Network error: ${err.message}`, 'err');
-        uploadBtn.disabled = false;
-      }
-    });
-
-    // ── Generate Quiz ─────────────────────────────────────────────────────
-    generateBtn.addEventListener('click', async () => {
-      if (!uploadDone) return;
-
-      generateBtn.disabled = true;
-      quizContainer.innerHTML = '';
-      setStatus(spinner('Generating quiz… this may take a few seconds.'));
-
-      const numQuestions = parseInt(numQSelect.value, 10);
-
-      try {
-        const res = await fetch('/generate-quiz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ num_questions: numQuestions }),
+        // Mark all choices
+        ul.querySelectorAll('li').forEach(item => {
+          item.classList.add('revealed');
+          const itemText = item.textContent.trim().replace(/^[○✓✗]\s*/, '');
+          if (itemText === q.answer || item.querySelector('.choice-icon').textContent !== '○' && choice === q.answer) {
+            // highlight correct
+          }
+          // Simpler: compare raw choice text stored in dataset
         });
 
-        const data = await res.json();
+        // Re-render with correct/incorrect classes
+        ul.querySelectorAll('li').forEach((item, i) => {
+          item.classList.add('revealed');
+          const c = q.choices[i];
+          item.querySelector('.choice-icon').textContent = c === q.answer ? '✓' : (c === choice && !isCorrect ? '✗' : '○');
+          if (c === q.answer) item.classList.add('correct');
+          else if (c === choice) item.classList.add('incorrect');
+        });
 
-        if (!res.ok) {
-          setStatus(`Error: ${data.error}`, 'err');
-          generateBtn.disabled = false;
-          return;
-        }
+        card.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+        card.querySelector('.explanation').classList.add('visible');
 
-        setStatus(`✅ Quiz ready — ${data.questions.length} questions. Click a choice to check your answer!`, 'ok');
-        renderQuiz(data.questions);
-        generateBtn.disabled = false;
-
-      } catch (err) {
-        setStatus(`Network error: ${err.message}`, 'err');
-        generateBtn.disabled = false;
-      }
-    });
-
-    // ── Render quiz cards ─────────────────────────────────────────────────
-    function renderQuiz(questions) {
-      quizContainer.innerHTML = `<h2>📝 Quiz (${questions.length} questions)</h2>`;
-
-      questions.forEach((q, idx) => {
-        const card = document.createElement('div');
-        card.className = 'question-card';
-
-        // Question header
-        const num  = document.createElement('div');
-        num.className = 'q-number';
-        num.textContent = `Question ${idx + 1}`;
-
-        const text = document.createElement('div');
-        text.className = 'q-text';
-        text.textContent = q.question;
-
-        // Choices
-        const ul = document.createElement('ul');
-        ul.className = 'choices';
-
-        q.choices.forEach(choice => {
-          const li = document.createElement('li');
-          li.textContent = choice;
-
-          li.addEventListener('click', () => {
-            // Reveal all choices
-            ul.querySelectorAll('li').forEach(item => {
-              item.classList.add('revealed');
-              if (item.textContent === q.answer) {
-                item.classList.add('correct');
-              } else if (item === li && item.textContent !== q.answer) {
-                item.classList.add('incorrect');
-              }
-            });
-            // Show explanation
-            card.querySelector('.explanation').classList.add('visible');
+        // Submit to backend for tracking
+        try {
+          const res = await fetch('/submit-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ concept: q.concept, correct: isCorrect }),
           });
-
-          ul.appendChild(li);
-        });
-
-        // Answer badge + explanation (hidden until click)
-        const badge = document.createElement('div');
-        badge.className = 'answer-badge';
-        badge.textContent = `✓ ${q.answer}`;
-
-        const explanation = document.createElement('div');
-        explanation.className = 'explanation';
-        explanation.textContent = q.explanation;
-
-        card.append(num, text, ul, badge, explanation);
-        quizContainer.appendChild(card);
+          const data = await res.json();
+          if (res.ok) updateProgressUI(data);
+        } catch (_) {}
       });
-    }
-  </script>
+
+      ul.appendChild(li);
+    });
+
+    quizArea.appendChild(card);
+  });
+}
+
+// ── Update progress sidebar ───────────────────────────────────────────────
+function updateProgressUI(data) {
+  const stats = data.stats || {};
+  // Refresh full progress from /progress
+  fetch('/progress')
+    .then(r => r.json())
+    .then(p => {
+      const total   = p.total_answered || 0;
+      const correct = p.total_correct  || 0;
+      const acc     = total > 0 ? Math.round((correct / total) * 100) : null;
+
+      answeredLabel.textContent = total;
+      correctLabel.textContent  = correct;
+      accLabel.textContent      = acc !== null ? acc + '%' : '—';
+      accBar.style.width        = acc !== null ? acc + '%' : '0%';
+
+      renderWeakConcepts(p.weak_concepts || []);
+    })
+    .catch(() => {});
+}
+
+function renderWeakConcepts(weak) {
+  if (!weak.length) {
+    weakPanel.innerHTML = '<p style="font-size:0.8rem;color:var(--muted)">No weak areas yet — keep going!</p>';
+    return;
+  }
+  weakPanel.innerHTML = `
+    <div class="weak-list">
+      ${weak.map(w => `
+        <div class="weak-chip" onclick="drillDown('${w.concept.replace(/'/g,"\\'")}')">
+          <span class="concept-name">${w.concept}</span>
+          <span class="concept-acc">${Math.round(w.accuracy * 100)}%</span>
+        </div>`).join('')}
+    </div>
+    <p class="weak-chip-hint">Click a concept to generate a focused quiz.</p>`;
+}
+
+// Clicking a weak concept pre-fills topic and triggers quiz generation
+function drillDown(concept) {
+  topicInput.value = concept;
+  generateBtn.click();
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────
+resetBtn.addEventListener('click', async () => {
+  if (!confirm('Clear all uploaded files and session progress?')) return;
+  await fetch('/reset', { method: 'DELETE' });
+  selectedFiles = [];
+  indexDone     = false;
+  fileList.innerHTML = '';
+  uploadBtn.disabled   = true;
+  generateBtn.disabled = true;
+  topicInput.value = '';
+  quizArea.innerHTML = `
+    <div class="empty-state">
+      <div class="big">🎓</div>
+      <p>Upload your lecture PDFs on the left,<br>choose a topic, and hit <strong>Generate Quiz</strong>.</p>
+    </div>`;
+  accLabel.textContent = '—';
+  accBar.style.width   = '0%';
+  answeredLabel.textContent = '0';
+  correctLabel.textContent  = '0';
+  weakPanel.innerHTML = '<div class="empty-state" style="padding:0.75rem 0"><p>Answer some questions to see suggestions.</p></div>';
+  clearStatus(uploadStatus);
+  clearStatus(generateStatus);
+});
+
+// ── Load progress on page load ────────────────────────────────────────────
+fetch('/progress').then(r => r.json()).then(p => {
+  if (p.total_answered) updateProgressUI({});
+}).catch(() => {});
+</script>
 </body>
 </html>

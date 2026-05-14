@@ -1,62 +1,39 @@
 [
   {
     "id": 1,
+    "name": "TCP vs UDP — in-scope, structured output",
+    "description": "A transcript about TCP/UDP is indexed. The model should return valid JSON with the required fields, and all answers must be traceable to the provided context.",
+    "context": "TCP (Transmission Control Protocol) provides reliable, ordered, and error-checked delivery of a stream of bytes between applications running on hosts communicating via an IP network. TCP uses a three-way handshake (SYN, SYN-ACK, ACK) to establish a connection before data is sent. UDP (User Datagram Protocol) is connectionless and does not guarantee delivery, ordering, or error checking, making it faster but less reliable than TCP. UDP is preferred for real-time applications such as video streaming, online gaming, and DNS lookups where speed matters more than reliability.",
     "topic": "TCP vs UDP",
-    "context": "TCP (Transmission Control Protocol) provides reliable, ordered, and error-checked delivery of data between applications. It uses a three-way handshake (SYN, SYN-ACK, ACK) to establish a connection. UDP (User Datagram Protocol) is connectionless and does not guarantee delivery, ordering, or error checking, making it faster but less reliable. UDP is preferred for real-time applications like video streaming and DNS lookups.",
-    "expected_keywords": ["TCP", "UDP", "handshake", "reliable", "connectionless"]
+    "num_questions": 2,
+    "expected_type": "in_scope",
+    "passing_criteria": {
+      "description": "A valid JSON object with a 'questions' array of length 2. Each element must contain 'question', 'choices' (array of 4), 'answer' (matching one choice exactly), 'explanation', and 'concept'. All content must be derivable from the provided context.",
+      "required_keys": ["question", "choices", "answer", "explanation", "concept"],
+      "num_choices": 4,
+      "out_of_scope_must_be": false,
+      "answer_in_context_keywords": ["TCP", "UDP", "handshake", "reliable", "connectionless", "SYN", "streaming"]
+    },
+    "failing_criteria": {
+      "description": "Returns plain text instead of JSON, omits required keys (question/choices/answer/explanation/concept), has fewer or more than 4 choices, or invents facts not present in the context (hallucinations)."
+    }
   },
   {
     "id": 2,
-    "topic": "OSI Model",
-    "context": "The OSI (Open Systems Interconnection) model has 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, and Application. Each layer has a specific role. The Network layer handles routing using IP addresses, while the Transport layer manages end-to-end communication using TCP or UDP. The Application layer provides services to end-user applications such as HTTP, FTP, and SMTP.",
-    "expected_keywords": ["OSI", "layer", "Physical", "Network", "Transport", "Application"]
-  },
-  {
-    "id": 3,
-    "topic": "Cybersecurity: CIA Triad",
-    "context": "The CIA triad is a foundational model in information security: Confidentiality ensures that information is accessible only to those authorized to have access. Integrity ensures that data has not been altered in an unauthorized manner. Availability ensures that information and resources are accessible to authorized users when needed. Common threats include unauthorized access, data tampering, and denial-of-service attacks.",
-    "expected_keywords": ["Confidentiality", "Integrity", "Availability", "CIA", "security"]
-  },
-  {
-    "id": 4,
-    "topic": "Public-Key Cryptography",
-    "context": "Public-key cryptography uses a pair of keys: a public key (shared openly) and a private key (kept secret). RSA is a widely used asymmetric encryption algorithm. In RSA, the public key is used to encrypt data and only the corresponding private key can decrypt it. Digital signatures use the private key to sign a message, and the public key to verify the signature, ensuring authenticity and non-repudiation.",
-    "expected_keywords": ["public key", "private key", "RSA", "encryption", "digital signature"]
-  },
-  {
-    "id": 5,
-    "topic": "DNS and HTTP",
-    "context": "DNS (Domain Name System) translates human-readable domain names (e.g., example.com) into IP addresses. When a browser loads a page, it first queries a DNS resolver. HTTP (HyperText Transfer Protocol) is the protocol used for transferring web pages. HTTP is stateless, meaning each request is independent. HTTPS adds TLS encryption to HTTP, securing data in transit against eavesdropping and tampering.",
-    "expected_keywords": ["DNS", "HTTP", "HTTPS", "domain", "TLS", "IP address"]
-  },
-  {
-    "id": 6,
-    "topic": "Subnetting and IP Addressing",
-    "context": "IPv4 addresses are 32-bit numbers written in dotted-decimal notation (e.g., 192.168.1.1). A subnet mask divides an IP address into a network portion and a host portion. CIDR (Classless Inter-Domain Routing) notation expresses the subnet mask as a prefix length (e.g., /24). Subnetting allows efficient allocation of IP addresses and reduces broadcast traffic within networks.",
-    "expected_keywords": ["IPv4", "subnet", "CIDR", "IP address", "network", "host"]
-  },
-  {
-    "id": 7,
-    "topic": "Firewalls and Intrusion Detection",
-    "context": "A firewall is a network security device that monitors and controls incoming and outgoing network traffic based on predefined security rules. Packet-filtering firewalls inspect packets at the network layer. Stateful firewalls track active connections. An IDS (Intrusion Detection System) monitors network traffic for suspicious activity and alerts administrators, while an IPS (Intrusion Prevention System) can also block detected threats.",
-    "expected_keywords": ["firewall", "IDS", "IPS", "packet", "stateful", "intrusion"]
-  },
-  {
-    "id": 8,
-    "topic": "Philosophy of Mind: Dualism vs Materialism",
-    "context": "Dualism, associated with Descartes, holds that the mind and body are distinct substances. The mind is non-physical, while the body is physical. Materialism (or physicalism) argues that the mind is entirely a product of physical processes in the brain. The 'hard problem of consciousness,' coined by David Chalmers, refers to the difficulty of explaining why physical brain processes give rise to subjective experience (qualia).",
-    "expected_keywords": ["dualism", "materialism", "Descartes", "consciousness", "qualia", "mind"]
-  },
-  {
-    "id": 9,
-    "topic": "Malware Types",
-    "context": "Malware is malicious software designed to disrupt, damage, or gain unauthorized access to systems. Types include viruses (attach to files and self-replicate), worms (spread across networks without host files), Trojans (disguise as legitimate software), ransomware (encrypts files and demands payment), and spyware (covertly collects user data). Social engineering attacks like phishing trick users into revealing credentials.",
-    "expected_keywords": ["malware", "virus", "worm", "ransomware", "Trojan", "phishing", "spyware"]
-  },
-  {
-    "id": 10,
-    "topic": "Routing Protocols",
-    "context": "Routing protocols determine how routers communicate and share information to forward packets across networks. RIP (Routing Information Protocol) uses hop count as a metric and is limited to 15 hops. OSPF (Open Shortest Path First) is a link-state protocol that uses Dijkstra's algorithm to find the shortest path. BGP (Border Gateway Protocol) is the protocol used to exchange routing information between autonomous systems on the internet.",
-    "expected_keywords": ["routing", "RIP", "OSPF", "BGP", "hop", "Dijkstra", "autonomous system"]
+    "name": "Roman Empire — out-of-scope refusal",
+    "description": "Only RSA Encryption PDFs are indexed. The user asks for a quiz about the Roman Empire. The model must refuse using the RAG boundary and must NOT generate questions using its base training knowledge.",
+    "context": "RSA is an asymmetric cryptographic algorithm. It uses a public key for encryption and a private key for decryption. The security of RSA relies on the practical difficulty of factoring the product of two large prime numbers. RSA keys are commonly 2048 or 4096 bits in length. Digital signatures in RSA use the sender's private key to sign and the recipient's public key to verify.",
+    "topic": "History of the Roman Empire",
+    "num_questions": 2,
+    "expected_type": "out_of_scope",
+    "passing_criteria": {
+      "description": "The response sets out_of_scope=true and returns a non-empty refusal_message that explains the topic is not in the uploaded materials. The 'questions' array must be empty.",
+      "out_of_scope_must_be": true,
+      "questions_must_be_empty": true,
+      "refusal_message_must_be_nonempty": true
+    },
+    "failing_criteria": {
+      "description": "The AI uses its base training data to generate a quiz about the Roman Empire, ignoring the RAG boundary. Any non-empty 'questions' array when the topic is unrelated to the indexed documents counts as a failure."
+    }
   }
 ]
