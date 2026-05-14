@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Quiz Generator</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #7dd3fc;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    /* ── Card wrapper ── */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── File input area ── */
+    .upload-area {
+      border: 2px dashed #334155;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .upload-area:hover { border-color: #7dd3fc; }
+    .upload-area.dragover { border-color: #38bdf8; background: #0f2942; }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    .upload-area label {
+      cursor: pointer;
+      color: #7dd3fc;
+      font-weight: 500;
+    }
+
+    .upload-area p { color: #64748b; font-size: 0.85rem; margin-top: 0.4rem; }
+
+    #filename-display {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      min-height: 1.2em;
+    }
+
+    /* ── Controls row ── */
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .controls label { color: #94a3b8; font-size: 0.9rem; }
+
+    select {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    /* ── Buttons ── */
+    button {
+      padding: 0.55rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #upload-btn {
+      background: #0ea5e9;
+      color: #fff;
+    }
+
+    #generate-btn {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    /* ── Status / error banner ── */
+    #status {
+      font-size: 0.9rem;
+      min-height: 1.4em;
+      margin-top: 0.75rem;
+    }
+
+    .status-ok   { color: #4ade80; }
+    .status-err  { color: #f87171; }
+    .status-info { color: #7dd3fc; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid #334155;
+      border-top-color: #7dd3fc;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Quiz cards ── */
+    #quiz-container { width: 100%; max-width: 680px; }
+
+    #quiz-container h2 {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+    }
+
+    .question-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .question-card .q-number {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6366f1;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+    }
+
+    .question-card .q-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .choices {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .choices li {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .choices li:hover { background: #1e3a5f; border-color: #7dd3fc; }
+
+    .choices li.correct {
+      background: #14532d;
+      border-color: #4ade80;
+      color: #bbf7d0;
+    }
+
+    .choices li.incorrect {
+      background: #450a0a;
+      border-color: #f87171;
+      color: #fecaca;
+    }
+
+    .choices li.revealed {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .answer-badge {
+      display: inline-block;
+      background: #14532d;
+      color: #4ade80;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      margin-bottom: 0.5rem;
+    }
+
+    .explanation {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      border-left: 3px solid #334155;
+      padding-left: 0.75rem;
+      display: none;
+    }
+
+    .explanation.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 AI Quiz Generator</h1>
+  <p class="subtitle">Upload a lecture PDF and let AI build a quiz for you.</p>
+
+  <!-- ── Upload card ── -->
+  <div class="card">
+    <h2>Step 1 — Upload PDF</h2>
+
+    <div class="upload-area" id="drop-zone">
+      <input type="file" id="file-input" accept=".pdf" />
+      <label for="file-input">📄 Click to choose a PDF</label>
+      <p>or drag and drop here</p>
+    </div>
+
+    <div id="filename-display">No file selected.</div>
+
+    <div class="controls">
+      <button id="upload-btn" disabled>Upload</button>
+
+      <label for="num-q">Questions:</label>
+      <select id="num-q">
+        <option value="3">3</option>
+        <option value="5" selected>5</option>
+        <option value="7">7</option>
+        <option value="10">10</option>
+      </select>
+
+      <button id="generate-btn" disabled>✨ Generate Quiz</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <!-- ── Quiz output ── -->
+  <div id="quiz-container"></div>
+
+  <script>
+    // ── DOM refs ──────────────────────────────────────────────────────────
+    const fileInput     = document.getElementById('file-input');
+    const dropZone      = document.getElementById('drop-zone');
+    const filenameDisplay = document.getElementById('filename-display');
+    const uploadBtn     = document.getElementById('upload-btn');
+    const generateBtn   = document.getElementById('generate-btn');
+    const numQSelect    = document.getElementById('num-q');
+    const statusEl      = document.getElementById('status');
+    const quizContainer = document.getElementById('quiz-container');
+
+    let selectedFile = null;
+    let uploadDone   = false;
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function setStatus(msg, type = 'info') {
+      statusEl.innerHTML = msg;
+      statusEl.className = `status-${type}`;
+    }
+
+    function spinner(msg) {
+      return `<span class="spinner"></span>${msg}`;
+    }
+
+    // ── File selection ────────────────────────────────────────────────────
+    fileInput.addEventListener('change', () => {
+      handleFileSelect(fileInput.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleFileSelect(e.dataTransfer.files[0]);
+    });
+
+    function handleFileSelect(file) {
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        setStatus('Only PDF files are supported.', 'err');
+        return;
+      }
+      selectedFile = file;
+      filenameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      uploadBtn.disabled = false;
+      generateBtn.disabled = true;
+      uploadDone = false;
+      setStatus('');
+    }
+
+    // ── Upload ────────────────────────────────────────────────────────────
+    uploadBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      uploadBtn.disabled = true;
+      generateBtn.disabled = true;
+      setStatus(spinner('Uploading and extracting text…'));
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(`Error: ${data.error}`, 'err');
+          uploadBtn.disabled = false;
+          return;
+        }
+
+        uploadDone = true;
+        generateBtn.disabled = false;
+        setStatus(
+          `✅ Uploaded <strong>${data.filename}</strong> — ${data.char_count.toLocaleString()} characters extracted.`,
+          'ok'
+        );
+      } catch (err) {
+        setStatus(`Network error: ${err.message}`, 'err');
+        uploadBtn.disabled = false;
+      }
+    });
+
+    // ── Generate Quiz ─────────────────────────────────────────────────────
+    generateBtn.addEventListener('click', async () => {
+      if (!uploadDone) return;
+
+      generateBtn.disabled = true;
+      quizContainer.innerHTML = '';
+      setStatus(spinner('Generating quiz… this may take a few seconds.'));
+
+      const numQuestions = parseInt(numQSelect.value, 10);
+
+      try {
+        const res = await fetch('/generate-quiz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ num_questions: numQuestions }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(`Error: ${data.error}`, 'err');
+          generateBtn.disabled = false;
+          return;
+        }
+
+        setStatus(`✅ Quiz ready — ${data.questions.length} questions. Click a choice to check your answer!`, 'ok');
+        renderQuiz(data.questions);
+        generateBtn.disabled = false;
+
+      } catch (err) {
+        setStatus(`Network error: ${err.message}`, 'err');
+        generateBtn.disabled = false;
+      }
+    });
+
+    // ── Render quiz cards ─────────────────────────────────────────────────
+    function renderQuiz(questions) {
+      quizContainer.innerHTML = `<h2>📝 Quiz (${questions.length} questions)</h2>`;
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        // Question header
+        const num  = document.createElement('div');
+        num.className = 'q-number';
+        num.textContent = `Question ${idx + 1}`;
+
+        const text = document.createElement('div');
+        text.className = 'q-text';
+        text.textContent = q.question;
+
+        // Choices
+        const ul = document.createElement('ul');
+        ul.className = 'choices';
+
+        q.choices.forEach(choice => {
+          const li = document.createElement('li');
+          li.textContent = choice;
+
+          li.addEventListener('click', () => {
+            // Reveal all choices
+            ul.querySelectorAll('li').forEach(item => {
+              item.classList.add('revealed');
+              if (item.textContent === q.answer) {
+                item.classList.add('correct');
+              } else if (item === li && item.textContent !== q.answer) {
+                item.classList.add('incorrect');
+              }
+            });
+            // Show explanation
+            card.querySelector('.explanation').classList.add('visible');
+          });
+
+          ul.appendChild(li);
+        });
+
+        // Answer badge + explanation (hidden until click)
+        const badge = document.createElement('div');
+        badge.className = 'answer-badge';
+        badge.textContent = `✓ ${q.answer}`;
+
+        const explanation = document.createElement('div');
+        explanation.className = 'explanation';
+        explanation.textContent = q.explanation;
+
+        card.append(num, text, ul, badge, explanation);
+        quizContainer.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
