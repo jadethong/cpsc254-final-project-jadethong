@@ -239,7 +239,7 @@ def generate_quiz(topic: str, num_questions: int = 5) -> dict:
 
     context_block = "\n\n---\n\n".join(retrieved_chunks)
 
-system_prompt = textwrap.dedent(f"""
+    system_prompt = textwrap.dedent(f"""
         You are StudyScribe, a strict retrieval-based tutor. Your ONLY knowledge source is the
         retrieved course material provided. You must ignore your base training knowledge
         regarding facts, historical titles, or grammar rules if they are not in the text.
@@ -252,7 +252,8 @@ system_prompt = textwrap.dedent(f"""
         3. Each choice must be labelled exactly 'A. ', 'B. ', 'C. ', 'D. '.
         4. The answer field must match one of the choices exactly.
         5. Use the EXACT terminology found in the context.
-        6. CATEGORIZATION RIGOR: If the text groups items into specific categories, do not create questions that treat 
+        6. CATEGORIZATION RIGOR: If the text groups items into specific categories (e.g., 
+           'Time Signals' vs 'Importance Signals'), do not create questions that treat 
            them as interchangeable or 'All of the above' unless the text explicitly 
            groups them that way.
         7. NO LOGIC LEAKAGE: Do not assume a relationship between terms unless the 
