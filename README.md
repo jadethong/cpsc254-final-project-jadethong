@@ -81,15 +81,23 @@ python eval/run_evals.py --verbose
 
 ```
 
-* **Case 1:** Tests in-scope retrieval (TCP vs UDP).
-* **Case 2:** Tests out-of-scope refusal (Attempting to ask about the Roman Empire using RSA encryption notes).
-
 ---
 
 ### Project Structure
 
-* `app.py`: Flask backend and session management.
-* `brain.py`: Core AI logic, RAG pipeline, and vector database management.
-* `eval/`: Contains `test_cases.json` and the evaluation script.
-* `static/` & `templates/`: Frontend UI assets and interactive flashcard logic.
-* `requirements.txt`: Pinned dependencies including `reportlab` for evaluation PDF generation and `numpy==1.26.4`.
+Based on your recent updates and the specific file structure in your repository, here is the corrected and finalized **Project Structure** section for your `README.md`.
+
+This version accurately reflects the addition of your evaluation folder, your frontend assets, and the local database directory.
+
+### Project Structure
+
+* **`app.py`**: The Flask backend that manages routing, PDF uploads, and the persistent user session.
+* **`brain.py`**: The core AI logic. This contains the RAG pipeline, ChromaDB vectorization, and the OpenAI Function Calling implementation for quiz generation.
+* **`eval/`**:
+* **`test_cases.json`**: A comprehensive suite of 10 labeled test cases covering in-scope and out-of-scope scenarios.
+* **`run_evals.py`**: The evaluation harness used to calculate the `Question_Relevance_Score`.
+* **`corpus/`**: Contains sample lecture PDFs (such as `lecture_philosophy.pdf`) used for RAG testing and demonstration.
+* **`index.html`**: The interactive frontend UI, featuring the upload zone and the flashcard study interface.
+* **`chroma_db/`**: A local directory where the vector embeddings and document chunks are stored persistently using ChromaDB.
+* **`requirements.txt`**: The complete list of pinned dependencies for database compatibility.
+* **`REPORT.md`**: The technical project report detailing iterations, AI behavior depth, and disclosure of AI assistant usage.
