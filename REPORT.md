@@ -26,7 +26,7 @@ The primary technical challenge in building StudyScribe was ensuring grounding. 
 
 * **Change:** Refined the prompt with Rule 6 (Categorization Rigor) to prevent logical hallucinations. 
 * **Motivating Example:** The AI generated a question about "Lecture Signals" where it grouped "Now/Then" (time signals) and "For example" (example signals) into a single "All of the Above" answer. The source text explicitly categorized these differently.
-* **Delta:** Question_Relevance_Score: 0.85 → 0.95.
+* **Delta:** Question_Relevance_Score: 0.85 → 0.90.
 * **Conclusion:** By adding strict categorization rules and fixing the underlying environment crashes, the AI finally achieved the "clinical" extraction needed for high-stakes study materials. The metric moved because the model stopped making logical leaps that were technically logical but contextually incorrect.
 
 ## 3. Code Walkthrough
