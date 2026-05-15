@@ -85,12 +85,6 @@ python eval/run_evals.py --verbose
 
 ### Project Structure
 
-Based on your recent updates and the specific file structure in your repository, here is the corrected and finalized **Project Structure** section for your `README.md`.
-
-This version accurately reflects the addition of your evaluation folder, your frontend assets, and the local database directory.
-
-### Project Structure
-
 * **`app.py`**: The Flask backend that manages routing, PDF uploads, and the persistent user session.
 * **`brain.py`**: The core AI logic. This contains the RAG pipeline, ChromaDB vectorization, and the OpenAI Function Calling implementation for quiz generation.
 * **`eval/`**:
