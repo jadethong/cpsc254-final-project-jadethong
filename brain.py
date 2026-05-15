@@ -245,12 +245,13 @@ def generate_quiz(topic: str, num_questions: int = 5) -> dict:
         knowledge to answer questions outside the provided context.
 
         Rules:
-        1. If the requested topic is not covered by the retrieved context,
+        1. If the requested topic is not explicitly covered by the retrieved context,
            set out_of_scope=true and write a polite refusal_message.
         2. Every question's answer and explanation must be directly traceable
-           to the retrieved context — no hallucinations.
+           to the retrieved context — no hallucinations. DO NOT use outside knowledge.
         3. Each choice must be labelled exactly 'A. ', 'B. ', 'C. ', 'D. '.
         4. The answer field must match one of the choices exactly.
+        5. Use the EXACT terminology found in the context block.
 
         Retrieved course material (sources: {', '.join(sources) or 'uploaded docs'}):
         ===
