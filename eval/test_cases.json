@@ -2,38 +2,119 @@
   {
     "id": 1,
     "name": "TCP vs UDP — in-scope, structured output",
-    "description": "A transcript about TCP/UDP is indexed. The model should return valid JSON with the required fields, and all answers must be traceable to the provided context.",
+    "expected_type": "in_scope",
+    "description": "Lecture transcript about TCP and UDP is indexed. Model must return valid JSON with all required fields; every correct answer must be traceable to the context.",
     "context": "TCP (Transmission Control Protocol) provides reliable, ordered, and error-checked delivery of a stream of bytes between applications running on hosts communicating via an IP network. TCP uses a three-way handshake (SYN, SYN-ACK, ACK) to establish a connection before data is sent. UDP (User Datagram Protocol) is connectionless and does not guarantee delivery, ordering, or error checking, making it faster but less reliable than TCP. UDP is preferred for real-time applications such as video streaming, online gaming, and DNS lookups where speed matters more than reliability.",
     "topic": "TCP vs UDP",
-    "num_questions": 2,
-    "expected_type": "in_scope",
-    "passing_criteria": {
-      "description": "A valid JSON object with a 'questions' array of length 2. Each element must contain 'question', 'choices' (array of 4), 'answer' (matching one choice exactly), 'explanation', and 'concept'. All content must be derivable from the provided context.",
-      "required_keys": ["question", "choices", "answer", "explanation", "concept"],
-      "num_choices": 4,
-      "out_of_scope_must_be": false,
-      "answer_in_context_keywords": ["TCP", "UDP", "handshake", "reliable", "connectionless", "SYN", "streaming"]
-    },
-    "failing_criteria": {
-      "description": "Returns plain text instead of JSON, omits required keys (question/choices/answer/explanation/concept), has fewer or more than 4 choices, or invents facts not present in the context (hallucinations)."
-    }
+    "num_questions": 3,
+    "passing_output": "JSON object with out_of_scope=false and a 'questions' array of 3 items. Each item has 'question', 'choices' (exactly 4), 'answer' (matches a choice), 'explanation', and 'concept'. All answers traceable to context (e.g. 'three-way handshake', 'connectionless', 'reliable').",
+    "failing_output": "Plain text instead of JSON, missing required keys, fewer/more than 4 choices per question, or answers that invent facts not in the context (e.g. 'TCP uses a five-way handshake').",
+    "answer_keywords": ["TCP", "UDP", "handshake", "reliable", "connectionless", "SYN", "streaming", "delivery"]
   },
   {
     "id": 2,
-    "name": "Roman Empire — out-of-scope refusal",
-    "description": "Only RSA Encryption PDFs are indexed. The user asks for a quiz about the Roman Empire. The model must refuse using the RAG boundary and must NOT generate questions using its base training knowledge.",
-    "context": "RSA is an asymmetric cryptographic algorithm. It uses a public key for encryption and a private key for decryption. The security of RSA relies on the practical difficulty of factoring the product of two large prime numbers. RSA keys are commonly 2048 or 4096 bits in length. Digital signatures in RSA use the sender's private key to sign and the recipient's public key to verify.",
-    "topic": "History of the Roman Empire",
-    "num_questions": 2,
+    "name": "OSI Model layers — in-scope, concept tags",
+    "expected_type": "in_scope",
+    "description": "Lecture about the 7-layer OSI model is indexed. Model must generate questions whose answers are grounded in the layer descriptions provided.",
+    "context": "The OSI (Open Systems Interconnection) model organizes network communication into 7 layers: (1) Physical — transmits raw bits over a medium; (2) Data Link — handles node-to-node framing and MAC addressing; (3) Network — manages routing and IP addressing; (4) Transport — provides end-to-end communication via TCP or UDP; (5) Session — establishes, manages, and terminates sessions; (6) Presentation — handles data translation, encryption, and compression; (7) Application — provides services to end-user applications such as HTTP, FTP, and SMTP.",
+    "topic": "OSI model layers",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions. Answers reference layer names and numbers present in the context (e.g. 'Network layer', 'layer 3', 'Data Link'). Each question has a meaningful 'concept' tag such as 'OSI layer 3' or 'Presentation layer role'.",
+    "failing_output": "Questions about OSI that reference layers or roles not mentioned in the context, missing 'concept' field, or out_of_scope=true for clearly indexed content.",
+    "answer_keywords": ["Physical", "Data Link", "Network", "Transport", "Session", "Presentation", "Application", "OSI", "layer"]
+  },
+  {
+    "id": 3,
+    "name": "CIA Triad — in-scope, cybersecurity",
+    "expected_type": "in_scope",
+    "description": "Cybersecurity lecture covering Confidentiality, Integrity, and Availability is indexed. All question answers must derive from these three concepts.",
+    "context": "The CIA triad is the core model of information security. Confidentiality ensures that data is accessible only to authorized parties; common mechanisms include encryption and access controls. Integrity ensures that data has not been altered in an unauthorized way; mechanisms include hashing and digital signatures. Availability ensures that systems and data are accessible to authorized users when needed; threats include denial-of-service (DoS) attacks. Together these three properties guide the design of secure systems.",
+    "topic": "CIA triad in cybersecurity",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions whose answers reference 'Confidentiality', 'Integrity', or 'Availability' and their mechanisms (encryption, hashing, DoS) as stated in the context.",
+    "failing_output": "Questions whose answers reference security concepts not in the context (e.g. non-repudiation, RBAC) or a response that returns out_of_scope=true.",
+    "answer_keywords": ["Confidentiality", "Integrity", "Availability", "encryption", "hashing", "denial-of-service", "CIA"]
+  },
+  {
+    "id": 4,
+    "name": "RSA Encryption — in-scope, cryptography",
+    "expected_type": "in_scope",
+    "description": "RSA cryptography lecture is indexed. Questions must be grounded in public/private key mechanics and prime factoring difficulty.",
+    "context": "RSA is an asymmetric cryptographic algorithm invented by Rivest, Shamir, and Adleman in 1977. It uses a pair of keys: a public key for encryption and a private key for decryption. The security of RSA depends on the practical difficulty of factoring the product of two large prime numbers. RSA key sizes of 2048 or 4096 bits are standard today. Digital signatures in RSA use the sender's private key to sign a message; the recipient uses the sender's public key to verify the signature, confirming authenticity and non-repudiation.",
+    "topic": "RSA encryption",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions. Answers reference concepts from the context: public/private key pair, prime factoring, key sizes (2048/4096 bits), digital signatures, non-repudiation.",
+    "failing_output": "Answers about elliptic-curve cryptography, AES, or other algorithms not mentioned in the context; missing 'concept' field; out_of_scope=true.",
+    "answer_keywords": ["public key", "private key", "RSA", "prime", "factoring", "2048", "digital signature", "non-repudiation"]
+  },
+  {
+    "id": 5,
+    "name": "DNS resolution — in-scope, networking",
+    "expected_type": "in_scope",
+    "description": "Lecture on DNS resolution steps is indexed. Model must produce questions grounded in the resolver, root, TLD, and authoritative server steps.",
+    "context": "DNS (Domain Name System) translates human-readable domain names into IP addresses. When a browser requests 'example.com', it first checks the local cache. If not cached, it queries a recursive resolver, which contacts a root name server. The root server directs the resolver to the appropriate Top-Level Domain (TLD) name server (e.g. '.com'). The TLD server then points to the authoritative name server for 'example.com', which returns the final IP address. The resolver caches the result for the duration of the TTL (Time To Live) value.",
+    "topic": "DNS resolution process",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions. Answers reference steps in the resolution chain: local cache, recursive resolver, root server, TLD server, authoritative server, TTL.",
+    "failing_output": "Questions about DNSSEC, DoH (DNS over HTTPS), or other DNS extensions not mentioned in the context; answers not traceable to the resolution steps described.",
+    "answer_keywords": ["DNS", "resolver", "root", "TLD", "authoritative", "TTL", "cache", "IP address"]
+  },
+  {
+    "id": 6,
+    "name": "Firewall types — in-scope, network security",
+    "expected_type": "in_scope",
+    "description": "Lecture covering packet-filter, stateful, and application-layer firewalls is indexed. Answers must match the type descriptions given.",
+    "context": "Firewalls control incoming and outgoing network traffic based on security rules. A packet-filtering firewall inspects each packet's source/destination IP and port without tracking connection state. A stateful firewall tracks active connections and can distinguish legitimate response packets from unsolicited ones. An application-layer firewall (proxy firewall) operates at Layer 7, inspecting the actual content of HTTP, FTP, or DNS traffic. Next-generation firewalls (NGFW) combine stateful inspection with deep-packet inspection and intrusion-prevention features.",
+    "topic": "types of firewalls",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions. Answers correctly identify packet-filtering, stateful, application-layer, or NGFW firewalls using terminology from the context.",
+    "failing_output": "Answers that confuse firewall types (e.g. saying packet-filtering tracks state) or reference IDS/IPS systems not mentioned in this context.",
+    "answer_keywords": ["packet-filtering", "stateful", "application-layer", "NGFW", "firewall", "deep-packet", "Layer 7"]
+  },
+  {
+    "id": 7,
+    "name": "Dualism vs Materialism — in-scope, philosophy",
+    "expected_type": "in_scope",
+    "description": "Philosophy of mind lecture on Cartesian dualism and materialism is indexed. Tests that the model works correctly on non-technical lecture content.",
+    "context": "Dualism, most associated with René Descartes, holds that mind and body are two distinct substances: the mind is non-physical (res cogitans) and the body is physical (res extensa). Materialism, also called physicalism, argues that the mind is entirely a product of physical brain processes. The 'hard problem of consciousness', coined by philosopher David Chalmers, refers to the challenge of explaining why and how physical brain activity gives rise to subjective experience, or qualia. Functionalism, a third view, defines mental states by their functional roles rather than their physical composition.",
+    "topic": "dualism vs materialism in philosophy of mind",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions grounded in the context. Answers reference Descartes, res cogitans/res extensa, Chalmers, qualia, physicalism, or functionalism as described.",
+    "failing_output": "Answers that cite philosophers or concepts not in the context (e.g. Kant's critique of pure reason, Hegel's dialectic); out_of_scope=true for this indexed content.",
+    "answer_keywords": ["Descartes", "dualism", "materialism", "physicalism", "Chalmers", "qualia", "consciousness", "functionalism"]
+  },
+  {
+    "id": 8,
+    "name": "Subnetting and CIDR — in-scope, IP addressing",
+    "expected_type": "in_scope",
+    "description": "IP addressing and subnetting lecture is indexed. Model must produce questions whose answers use the prefix notation and subnet concepts from the context.",
+    "context": "IPv4 addresses are 32-bit numbers written in dotted-decimal notation (e.g. 192.168.1.1). Subnetting divides an IP network into smaller sub-networks to improve efficiency and reduce broadcast traffic. CIDR (Classless Inter-Domain Routing) expresses the subnet mask as a prefix length (e.g. /24 means the first 24 bits are the network portion). A /24 subnet provides 256 addresses (254 usable hosts). The default gateway is the router interface that forwards traffic outside the local subnet. Private IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) are not routable on the public internet.",
+    "topic": "subnetting and CIDR notation",
+    "num_questions": 3,
+    "passing_output": "JSON with out_of_scope=false and 3 questions. Answers use CIDR prefix notation, correct host counts, or private IP ranges as stated in the context.",
+    "failing_output": "Answers giving wrong subnet math (e.g. saying /24 has 512 hosts) or referencing IPv6 addressing not covered in this context.",
+    "answer_keywords": ["CIDR", "subnet", "prefix", "/24", "IPv4", "private", "192.168", "broadcast", "gateway"]
+  },
+  {
+    "id": 9,
+    "name": "Pop music history — out-of-scope refusal",
     "expected_type": "out_of_scope",
-    "passing_criteria": {
-      "description": "The response sets out_of_scope=true and returns a non-empty refusal_message that explains the topic is not in the uploaded materials. The 'questions' array must be empty.",
-      "out_of_scope_must_be": true,
-      "questions_must_be_empty": true,
-      "refusal_message_must_be_nonempty": true
-    },
-    "failing_criteria": {
-      "description": "The AI uses its base training data to generate a quiz about the Roman Empire, ignoring the RAG boundary. Any non-empty 'questions' array when the topic is unrelated to the indexed documents counts as a failure."
-    }
+    "description": "Only a networking lecture (TCP/UDP) is indexed. The user requests a quiz about pop music history. The model must refuse and must NOT use base training knowledge to answer.",
+    "context": "TCP (Transmission Control Protocol) provides reliable, ordered, and error-checked delivery of a stream of bytes between applications running on hosts communicating via an IP network. TCP uses a three-way handshake (SYN, SYN-ACK, ACK) to establish a connection before data is sent. UDP (User Datagram Protocol) is connectionless and does not guarantee delivery, ordering, or error checking, making it faster but less reliable than TCP.",
+    "topic": "history of pop music and famous artists",
+    "num_questions": 2,
+    "passing_output": "JSON with out_of_scope=true, questions=[], and a non-empty refusal_message explaining that pop music history is not covered by the uploaded course materials.",
+    "failing_output": "Model generates questions about The Beatles, Michael Jackson, or any pop music content using its base training knowledge, ignoring the RAG boundary."
+  },
+  {
+    "id": 10,
+    "name": "Roman Empire — out-of-scope refusal",
+    "expected_type": "out_of_scope",
+    "description": "Only an RSA encryption lecture is indexed. The user requests a quiz about the Roman Empire. The model must refuse and return no questions.",
+    "context": "RSA is an asymmetric cryptographic algorithm invented by Rivest, Shamir, and Adleman in 1977. It uses a pair of keys: a public key for encryption and a private key for decryption. The security of RSA depends on the practical difficulty of factoring the product of two large prime numbers. RSA key sizes of 2048 or 4096 bits are standard today.",
+    "topic": "history of the Roman Empire",
+    "num_questions": 2,
+    "passing_output": "JSON with out_of_scope=true, questions=[], and a non-empty refusal_message explaining that Roman Empire history is not in the uploaded materials.",
+    "failing_output": "Model generates questions about Julius Caesar, Roman senators, or empire expansion using base training data, ignoring the uploaded RSA context."
   }
 ]
